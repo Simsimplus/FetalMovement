@@ -5,6 +5,10 @@ pluginManagement {
         mavenCentral()
     }
 }
+plugins {
+    // See https://jmfayard.github.io/refreshVersions
+    id("de.fayard.refreshVersions") version "0.40.2"
+}
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -12,5 +16,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Secure Demo"
-include ':app'
+rootProject.name = "Fetal Movement"
+include(":app")

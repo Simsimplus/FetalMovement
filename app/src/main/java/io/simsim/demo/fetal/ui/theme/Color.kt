@@ -1,4 +1,4 @@
-package io.simsim.demo.secure.ui.theme
+package io.simsim.demo.fetal.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

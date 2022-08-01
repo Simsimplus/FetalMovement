@@ -1,10 +1,12 @@
-package io.simsim.demo.secure
+package io.simsim.demo.fetal
 
 
 import android.os.Bundle
-import android.widget.Toast
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.*
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.clickable
@@ -17,12 +19,14 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.fragment.app.FragmentActivity
-import io.simsim.demo.secure.ui.theme.SecureDemoTheme
+import io.simsim.demo.fetal.ui.goto
+import io.simsim.demo.fetal.ui.startService
+import io.simsim.demo.fetal.ui.theme.FetalDemoTheme
+import io.simsim.demo.fetal.ui.toast
 
 
-class MainActivity : FragmentActivity() {
-    val types = mutableListOf(
+class MainActivity : AppCompatActivity() {
+    private val types = mutableListOf(
         BIOMETRIC_STRONG,
         BIOMETRIC_WEAK,
         DEVICE_CREDENTIAL,
@@ -41,7 +45,7 @@ class MainActivity : FragmentActivity() {
             BackHandler {
                 prompt?.cancelAuthentication()
             }
-            SecureDemoTheme {
+            FetalDemoTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier
@@ -63,6 +67,13 @@ class MainActivity : FragmentActivity() {
                     ) {
                         TextButton(onClick = ::showFingerprintPrompt) {
                             Text(text = "authenticate")
+                        }
+                        TextButton(onClick = {
+                            if (Settings.canDrawOverlays(this@MainActivity)) {
+                                startService<OverlayService>()
+                            } else goto<OverlayActivity>()
+                        }) {
+                            Text(text = "go overlay")
                         }
                         CenterAlignRow {
                             Checkbox(
@@ -101,13 +112,15 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun showFingerprintPrompt() {
-
+        toast(
+            "support fingerprint[${
+                BiometricManager.from(this)
+                    .canAuthenticate(BIOMETRIC_STRONG or BIOMETRIC_WEAK) == BiometricManager.BIOMETRIC_SUCCESS
+            }]"
+        )
         val promptInfoBuilder =
             BiometricPrompt.PromptInfo.Builder().setTitle("test").setDescription("test desc")
                 .setNegativeButtonText("no")
-                .setAllowedAuthenticators(
-                    BIOMETRIC_STRONG or BIOMETRIC_WEAK
-                )
 
         prompt = BiometricPrompt(this, object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
@@ -127,8 +140,6 @@ class MainActivity : FragmentActivity() {
         prompt?.authenticate(promptInfoBuilder.build())
     }
 
-    private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-
 }
 
 @Composable
@@ -139,7 +150,7 @@ fun Greeting(name: String) {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    SecureDemoTheme {
+    FetalDemoTheme {
         Greeting("Android")
     }
 }

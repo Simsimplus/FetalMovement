@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "io.simsim.demo.secure"
-        minSdk = 23
+        minSdk = 26
         targetSdk = 32
         versionCode = 1
         versionName = "1.0"
@@ -53,6 +53,7 @@ android {
 dependencies {
     implementation(AndroidX.core.ktx)
     implementation(AndroidX.compose.ui)
+    implementation(AndroidX.compose.material.icons.extended)
     implementation(AndroidX.compose.material3)
     implementation(AndroidX.compose.ui.toolingPreview)
     implementation(AndroidX.lifecycle.runtimeKtx)
@@ -60,7 +61,12 @@ dependencies {
     implementation(AndroidX.activity.compose)
     implementation(AndroidX.biometric.ktx)
     implementation(AndroidX.appCompat)
+    implementation(AndroidX.savedState)
     implementation(Google.android.material)
+
+    implementation(Splitties.pack.androidMdc)
+
+
     testImplementation(Testing.junit4)
     androidTestImplementation(AndroidX.test.ext.junit)
     androidTestImplementation(AndroidX.test.espresso.core)

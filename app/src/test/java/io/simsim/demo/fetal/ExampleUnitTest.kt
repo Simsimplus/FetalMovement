@@ -1,4 +1,4 @@
-package io.simsim.demo.secure
+package io.simsim.demo.fetal
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

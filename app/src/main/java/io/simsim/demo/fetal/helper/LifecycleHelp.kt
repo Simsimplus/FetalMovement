@@ -1,8 +1,9 @@
-package io.simsim.demo.fetal
+package io.simsim.demo.fetal.helper
 
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import io.simsim.demo.fetal.service.BaseService
 import java.lang.ref.WeakReference
 
 /**
@@ -50,7 +51,7 @@ object LifecycleHelp : Application.ActivityLifecycleCallbacks {
     }
 
     fun setOnAppFinishedListener(appFinishedListener: (() -> Unit)) {
-        this.appFinishedListener = appFinishedListener
+        LifecycleHelp.appFinishedListener = appFinishedListener
     }
 
     override fun onActivityPaused(activity: Activity) {

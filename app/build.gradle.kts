@@ -63,6 +63,7 @@ dependencies {
     implementation(AndroidX.biometric.ktx)
     implementation(AndroidX.appCompat)
     implementation(AndroidX.savedState)
+    implementation(AndroidX.core.splashscreen)
     implementation(Google.android.material)
 
     implementation(Splitties.pack.androidMdc)

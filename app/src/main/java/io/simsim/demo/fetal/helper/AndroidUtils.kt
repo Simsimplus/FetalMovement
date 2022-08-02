@@ -1,4 +1,4 @@
-package io.simsim.demo.fetal.ui
+package io.simsim.demo.fetal.helper
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -10,7 +10,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.lifecycle.ViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import io.simsim.demo.fetal.BaseService
+import io.simsim.demo.fetal.service.BaseService
 
 @SuppressLint("ObsoleteSdkInt")
 inline fun <reified Service> Context.startService() {

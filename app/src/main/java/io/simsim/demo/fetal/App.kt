@@ -3,6 +3,7 @@ package io.simsim.demo.fetal
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import io.simsim.demo.fetal.helper.LifecycleHelp
 import splitties.systemservices.notificationManager
 
 class App : Application() {

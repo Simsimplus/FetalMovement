@@ -18,25 +18,29 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <service
-            android:name="io.simsim.demo.fetal.OverlayService"
+            android:name="io.simsim.demo.fetal.service.OverlayService"
             android:enabled="true"
             android:exported="false" />
 
         <activity
-            android:name="io.simsim.demo.fetal.OverlayActivity"
+            android:name="io.simsim.demo.fetal.ui.overlay.OverlayActivity"
             android:exported="false"
             android:theme="@style/AppTheme" />
         <activity
-            android:name="io.simsim.demo.fetal.MainActivity"
+            android:name="io.simsim.demo.fetal.ui.main.MainActivity"
             android:exported="true"
             android:launchMode="singleInstance"
-            android:theme="@style/AppTheme">
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.history.HistoryActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package io.simsim.demo.fetal
+package io.simsim.demo.fetal.service
 
 import android.graphics.PixelFormat
 import android.view.Gravity
@@ -14,9 +14,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Lifecycle
 import io.simsim.demo.fetal.App.Companion.NOTIFICATION_FLOAT_ID
-import io.simsim.demo.fetal.ui.appLifecycleFlow
-import io.simsim.demo.fetal.ui.buildComposeView
-import io.simsim.demo.fetal.ui.goto
+import io.simsim.demo.fetal.helper.appLifecycleFlow
+import io.simsim.demo.fetal.helper.buildComposeView
+import io.simsim.demo.fetal.helper.goto
+import io.simsim.demo.fetal.ui.main.MainActivity
 import io.simsim.demo.fetal.ui.theme.FetalDemoTheme
 import kotlinx.coroutines.launch
 

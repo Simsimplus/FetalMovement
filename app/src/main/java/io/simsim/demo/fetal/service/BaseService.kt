@@ -1,6 +1,6 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-package io.simsim.demo.fetal
+package io.simsim.demo.fetal.service
 
 import android.app.Service
 import android.content.Intent
@@ -10,6 +10,7 @@ import androidx.lifecycle.*
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
+import io.simsim.demo.fetal.helper.LifecycleHelp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel

@@ -1,4 +1,4 @@
-package io.simsim.demo.fetal.ui
+package io.simsim.demo.fetal.helper
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle

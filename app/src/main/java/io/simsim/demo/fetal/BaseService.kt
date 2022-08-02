@@ -20,21 +20,13 @@ abstract class BaseService :
     LifecycleOwner,
     ViewModelStoreOwner,
     SavedStateRegistryOwner {
-    private val lifecycleRegistry: LifecycleRegistry by lazy { LifecycleRegistry(this) }
+    private val _lifecycleRegistry: LifecycleRegistry by lazy { LifecycleRegistry(this) }
+    private val handleLifecycleEvent = _lifecycleRegistry::handleLifecycleEvent
     private val _savedStateRegistry by lazy { SavedStateRegistryController.create(this) }
-    override fun getLifecycle(): Lifecycle = lifecycleRegistry
-
-    //ViewModelStore Methods
-    private val store by lazy { ViewModelStore() }
-
-    override fun getViewModelStore(): ViewModelStore = store
-
-    //SaveStateRegistry Methods
-    override val savedStateRegistry: SavedStateRegistry
-        get() = _savedStateRegistry.savedStateRegistry
-
-    private fun handleLifecycleEvent(event: Lifecycle.Event) =
-        lifecycleRegistry.handleLifecycleEvent(event)
+    private val _viewModelStore by lazy { ViewModelStore() }
+    override fun getLifecycle(): Lifecycle = _lifecycleRegistry
+    override fun getViewModelStore(): ViewModelStore = _viewModelStore
+    override val savedStateRegistry: SavedStateRegistry = _savedStateRegistry.savedStateRegistry
 
     @CallSuper
     override fun onCreate() {
@@ -47,20 +39,20 @@ abstract class BaseService :
     }
 
     @CallSuper
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        super.onTaskRemoved(rootIntent)
-        stopSelf()
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-
-    @CallSuper
     override fun onDestroy() {
         super.onDestroy()
         cancel()
         LifecycleHelp.onServiceDestroy(this)
         handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
+
+    @CallSuper
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        stopSelf()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+
 }

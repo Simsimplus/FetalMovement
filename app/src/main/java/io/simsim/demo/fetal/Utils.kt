@@ -12,7 +12,6 @@ import androidx.lifecycle.ViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import io.simsim.demo.fetal.BaseService
 
-
 @SuppressLint("ObsoleteSdkInt")
 inline fun <reified Service> Context.startService() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -21,7 +20,6 @@ inline fun <reified Service> Context.startService() {
         startService(Intent(this, Service::class.java))
     }
 }
-
 
 fun Context.toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 inline fun <reified Activity> Context.goto() = startActivity(
@@ -38,4 +36,3 @@ fun BaseService.buildComposeView(
     ViewTreeViewModelStoreOwner.set(it, this)
     it.setViewTreeSavedStateRegistryOwner(this)
 }
-

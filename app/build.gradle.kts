@@ -3,6 +3,7 @@ import de.fayard.refreshVersions.core.versionFor
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.diffplug.spotless") version "6.9.0"
 }
 android {
     compileSdk = 32
@@ -73,4 +74,12 @@ dependencies {
     androidTestImplementation(AndroidX.compose.ui.testJunit4)
     debugImplementation(AndroidX.compose.ui.tooling)
     debugImplementation(AndroidX.compose.ui.testManifest)
+}
+
+spotless {
+    kotlin {
+        target("**/*.kt")
+        ktlint()
+            .editorConfigOverride(mapOf("disabled_rules" to "no-wildcard-imports,filename"))
+    }
 }

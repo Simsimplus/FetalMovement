@@ -31,7 +31,6 @@ class OverlayService : BaseService() {
         getSystemService(WINDOW_SERVICE) as WindowManager
     }
 
-
     override fun onCreate() {
         super.onCreate()
         startForeground(1, getNotification())

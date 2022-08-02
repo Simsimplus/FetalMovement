@@ -1,6 +1,5 @@
 package io.simsim.demo.fetal
 
-
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
@@ -24,12 +23,11 @@ import io.simsim.demo.fetal.ui.startService
 import io.simsim.demo.fetal.ui.theme.FetalDemoTheme
 import io.simsim.demo.fetal.ui.toast
 
-
 class MainActivity : AppCompatActivity() {
     private val types = mutableListOf(
         BIOMETRIC_STRONG,
         BIOMETRIC_WEAK,
-        DEVICE_CREDENTIAL,
+        DEVICE_CREDENTIAL
     )
 
     @Volatile
@@ -82,7 +80,8 @@ class MainActivity : AppCompatActivity() {
                                     if (!notContain) bioTypes.remove(BIOMETRIC_STRONG) else bioTypes.add(
                                         BIOMETRIC_STRONG
                                     )
-                                })
+                                }
+                            )
                             Text(text = "BIOMETRIC_STRONG")
                         }
                         CenterAlignRow {
@@ -92,7 +91,8 @@ class MainActivity : AppCompatActivity() {
                                     if (!notContain) bioTypes.remove(BIOMETRIC_WEAK) else bioTypes.add(
                                         BIOMETRIC_WEAK
                                     )
-                                })
+                                }
+                            )
                             Text(text = "BIOMETRIC_WEAK")
                         }
                         CenterAlignRow {
@@ -102,7 +102,8 @@ class MainActivity : AppCompatActivity() {
                                     if (!notContain) bioTypes.remove(DEVICE_CREDENTIAL) else bioTypes.add(
                                         DEVICE_CREDENTIAL
                                     )
-                                })
+                                }
+                            )
                             Text(text = "DEVICE_CREDENTIAL")
                         }
                     }
@@ -122,24 +123,26 @@ class MainActivity : AppCompatActivity() {
             BiometricPrompt.PromptInfo.Builder().setTitle("test").setDescription("test desc")
                 .setNegativeButtonText("no")
 
-        prompt = BiometricPrompt(this, object : BiometricPrompt.AuthenticationCallback() {
-            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                toast("[$errorCode] $errString")
-            }
+        prompt = BiometricPrompt(
+            this,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    toast("[$errorCode] $errString")
+                }
 
-            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                toast("succeeded")
-            }
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    toast("succeeded")
+                }
 
-            override fun onAuthenticationFailed() {
-                toast("failed")
-                prompt?.cancelAuthentication()
-                prompt?.authenticate(promptInfoBuilder.build())
+                override fun onAuthenticationFailed() {
+                    toast("failed")
+                    prompt?.cancelAuthentication()
+                    prompt?.authenticate(promptInfoBuilder.build())
+                }
             }
-        })
+        )
         prompt?.authenticate(promptInfoBuilder.build())
     }
-
 }
 
 @Composable

@@ -53,6 +53,4 @@ abstract class BaseService :
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
-
-
 }

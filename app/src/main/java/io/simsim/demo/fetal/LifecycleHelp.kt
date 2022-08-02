@@ -60,7 +60,6 @@ object LifecycleHelp : Application.ActivityLifecycleCallbacks {
     }
 
     override fun onActivityStarted(activity: Activity) {
-
     }
 
     override fun onActivityDestroyed(activity: Activity) {

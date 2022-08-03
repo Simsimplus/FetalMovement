@@ -1,97 +1,58 @@
 package io.simsim.demo.fetal.service
 
-import android.graphics.PixelFormat
-import android.view.Gravity
-import android.view.View
-import android.view.WindowManager
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MonitorHeart
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import android.app.Service
+import android.content.Intent
+import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.Lifecycle
 import io.simsim.demo.fetal.App.Companion.NOTIFICATION_FLOAT_ID
-import io.simsim.demo.fetal.helper.appLifecycleFlow
-import io.simsim.demo.fetal.helper.buildComposeView
-import io.simsim.demo.fetal.helper.goto
+import io.simsim.demo.fetal.helper.Timer
+import io.simsim.demo.fetal.helper.ValidChecker
+import io.simsim.demo.fetal.helper.activityPendingIntent
 import io.simsim.demo.fetal.ui.main.MainActivity
-import io.simsim.demo.fetal.ui.theme.FetalDemoTheme
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import java.time.Duration
 
 class OverlayService : BaseService() {
 
-    private val chatHead: View by lazy {
-        buildComposeView {
-            FloatView()
+    private val validChecker = ValidChecker(Duration.ofMinutes(5))
+
+    val timerFlow = Timer.timer(Duration.ofHours(1), Duration.ofSeconds(1))
+        .stateIn(this, SharingStarted.Lazily, initialValue = "--")
+    val totalClick = MutableStateFlow(0)
+    val validClick = MutableStateFlow(0)
+
+    fun onClick() {
+        validChecker.apply {
+            validClick.update {
+                it + 1
+            }
         }
-    }
-    private val wm by lazy {
-        getSystemService(WINDOW_SERVICE) as WindowManager
+        totalClick.update {
+            it + 1
+        }
     }
 
     override fun onCreate() {
         super.onCreate()
-        startForeground(1, getNotification())
-        launch {
-            appLifecycleFlow.collect {
-                when (it) {
-                    Lifecycle.Event.ON_CREATE -> {}
-                    Lifecycle.Event.ON_START -> {}
-                    Lifecycle.Event.ON_RESUME -> dismissFloatingWindow()
-                    Lifecycle.Event.ON_PAUSE -> showFloatingWindow()
-                    Lifecycle.Event.ON_STOP -> {}
-                    Lifecycle.Event.ON_DESTROY -> dismissFloatingWindow()
-                    Lifecycle.Event.ON_ANY -> {}
-                }
-            }
+        startForeground(-1122394, getNotification())
+    }
+
+    override fun onBind(intent: Intent?): IBinder {
+        return object : BaseBinder() {
+            override val service: Service
+                get() = this@OverlayService
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        dismissFloatingWindow()
-    }
-
-    private fun showFloatingWindow() {
-        startForeground(1, getNotification())
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
-        )
-
-        params.gravity = Gravity.TOP or Gravity.START
-        params.x = 0
-        params.y = 100
-
-        wm.addView(chatHead, params)
-    }
-
-    private fun dismissFloatingWindow() {
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        if (chatHead.isAttachedToWindow) {
-            wm.removeView(chatHead)
-        }
-    }
-
-    private fun getNotification() = NotificationCompat.Builder(this, NOTIFICATION_FLOAT_ID).apply {
-        this.setContentText("setContentText")
-        this.setContentTitle("setContentTitle")
-    }.build()
-}
-
-@Composable
-fun FloatView() = LocalContext.current.run {
-    FetalDemoTheme {
-        Surface {
-            IconButton(onClick = { goto<MainActivity>() }) {
-                Icon(imageVector = Icons.Rounded.MonitorHeart, contentDescription = "heart rate")
-            }
-        }
-    }
+    private fun getNotification() = NotificationCompat.Builder(this, NOTIFICATION_FLOAT_ID)
+        .setOngoing(true)
+        .setContentTitle("fetal")
+        .setContentText("notificationContent")
+        .setContentIntent(
+            activityPendingIntent<MainActivity>("back")
+        ).setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+        .build()
 }

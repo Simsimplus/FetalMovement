@@ -64,9 +64,12 @@ dependencies {
     implementation(AndroidX.appCompat)
     implementation(AndroidX.savedState)
     implementation(AndroidX.core.splashscreen)
+    implementation(AndroidX.dynamicAnimation.ktx)
     implementation(Google.android.material)
 
-    implementation(Splitties.pack.androidMdc)
+    implementation(Splitties.pack.androidMdcWithViewsDsl)
+
+    implementation(files("./libs/EasyFloat-2.0.4.aar"))
 
 
     testImplementation(Testing.junit4)

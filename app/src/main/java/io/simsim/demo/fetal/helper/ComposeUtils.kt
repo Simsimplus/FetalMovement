@@ -3,9 +3,7 @@ package io.simsim.demo.fetal.helper
 import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -19,13 +17,27 @@ import androidx.compose.ui.semantics.Role
 @Composable
 fun CenterAlignRow(
     modifier: Modifier = Modifier,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Center,
     content: @Composable RowScope.() -> Unit
 ) {
     Row(
         modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = horizontalArrangement,
+        content = content
+    )
+}
+
+@Composable
+fun CenterAlignColumn(
+    modifier: Modifier = Modifier,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Center,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = verticalArrangement,
         content = content
     )
 }

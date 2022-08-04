@@ -1,33 +1,41 @@
 package io.simsim.demo.fetal.helper
 
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import java.time.Duration
 import kotlin.time.toKotlinDuration
 
 object Timer {
     @JvmStatic
-    fun timer(duration: Duration, interval: Duration) = flow {
+    fun formatTimeString(duration: Duration, interval: Duration, started: Boolean = true) =
+        timer(duration, interval, started).map {
+            it.format()
+        }
+
+    @JvmStatic
+    fun timer(duration: Duration, interval: Duration, started: Boolean = true) = flow {
         var tmp = duration
-        emit(duration.format())
+        emit(duration)
+        if (!started) return@flow
         while (tmp.seconds > 0) {
             tmp -= interval
             kotlinx.coroutines.delay(interval.toKotlinDuration())
-            emit(tmp.format())
+            emit(tmp)
         }
     }
 
     private fun Duration.format() = when {
-        this.toDays() > 0 -> {
-            "%d天%d:%d:%d:".format(toDays(), toHours() % 24, toMinutes() % 60, seconds % 60)
+        this.seconds <= 60 -> {
+            "%02ds".format(seconds)
         }
-        this.toHours() > 0 -> {
-            "%d:%d:%d".format(toHours() % 24, toMinutes() % 60, seconds % 60)
+        this.toMinutes() <= 60 -> {
+            "%02d:%02d".format(toMinutes() % 60, seconds % 60)
         }
-        this.toMinutes() > 0 -> {
-            "%d:%d".format(toMinutes() % 60, seconds % 60)
+        this.toHours() <= 24 -> {
+            "%02d:%02d:%02d".format(toHours() % 24, toMinutes() % 60, seconds % 60)
         }
         else -> {
-            "%ds".format(seconds)
+            "%d天%02d:%02d:%02d".format(toDays(), toHours() % 24, toMinutes() % 60, seconds % 60)
         }
     }
 }

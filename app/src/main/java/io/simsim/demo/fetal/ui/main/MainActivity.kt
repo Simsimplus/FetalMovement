@@ -1,5 +1,6 @@
 package io.simsim.demo.fetal.ui.main
 
+import android.app.Activity
 import android.app.Service
 import android.content.ComponentName
 import android.content.Intent
@@ -14,6 +15,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,10 +31,13 @@ import androidx.fragment.app.FragmentActivity
 import com.lzf.easyfloat.EasyFloat
 import com.lzf.easyfloat.enums.ShowPattern
 import com.lzf.easyfloat.enums.SidePattern
+import com.lzf.easyfloat.interfaces.OnPermissionResult
+import com.lzf.easyfloat.permission.PermissionUtils
 import io.simsim.demo.fetal.R
 import io.simsim.demo.fetal.helper.*
 import io.simsim.demo.fetal.service.BaseBinder
 import io.simsim.demo.fetal.service.OverlayService
+import io.simsim.demo.fetal.ui.history.HistoryActivity
 import io.simsim.demo.fetal.ui.overlay.OverlayActivity
 import io.simsim.demo.fetal.ui.theme.FetalDemoTheme
 import io.simsim.demo.fetal.ui.widgt.FloatingView
@@ -90,6 +97,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         setContent {
             RecordScreen(
                 this.service.timerFlow.collectAsState().value,
+                this.service.validTimeFlow.collectAsState().value,
                 this.service.validClick.collectAsState().value,
                 this.service.totalClick.collectAsState().value,
                 this.service::onClick
@@ -112,10 +120,17 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
 @Composable
 private fun RecordScreen(
     countdownText: String,
+    validCountDownText: String,
     validClick: Int,
     totalClick: Int,
     onClick: () -> Unit
 ) {
+    val ctx = ctx
+    var isAllowOverlay by remember {
+        mutableStateOf(
+            Settings.canDrawOverlays(ctx)
+        )
+    }
     FetalDemoTheme {
         // A surface container using the 'background' color from the theme
         Surface(
@@ -124,12 +139,36 @@ private fun RecordScreen(
             color = MaterialTheme.colorScheme.background
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
+                IconToggleButton(
+                    checked = isAllowOverlay,
+                    onCheckedChange = {
+                        if (!Settings.canDrawOverlays(ctx)) PermissionUtils.requestPermission(
+                            ctx as Activity,
+                            object : OnPermissionResult {
+                                override fun permissionResult(isOpen: Boolean) {
+                                    isAllowOverlay = isOpen
+                                }
+                            }
+                        )
+                    }
+                ) {
+                    Icon(imageVector = Icons.Rounded.Layers, contentDescription = "canOverlay")
+                }
+                IconButton(
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    onClick = { ctx.goto<HistoryActivity>() }
+                ) {
+                    Icon(imageVector = Icons.Rounded.History, contentDescription = "history")
+                }
                 Heart(
                     modifier = Modifier.align(Alignment.Center),
                     countdownText = countdownText,
                     onClick = onClick
                 )
-                Text(modifier = Modifier.align(Alignment.BottomStart), text = "valid:$validClick")
+                Text(
+                    modifier = Modifier.align(Alignment.BottomStart),
+                    text = "[$validCountDownText]valid:$validClick"
+                )
                 Text(modifier = Modifier.align(Alignment.BottomEnd), text = "total:$totalClick")
             }
         }

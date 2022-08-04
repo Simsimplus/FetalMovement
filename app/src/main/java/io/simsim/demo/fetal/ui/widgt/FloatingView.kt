@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.isVisible
 import io.simsim.demo.fetal.R
+import io.simsim.demo.fetal.helper.scaleAnimation
 import io.simsim.demo.fetal.ui.theme.Purple40
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
@@ -44,27 +45,31 @@ class FloatingView constructor(
             }
         }
 
-    private val collapsedView = context.textView {
+    private val collapsedView = textView {
         setTextColor(Purple40.toArgb())
     }
-    private val clickTextView = context.textView {
+    private val clickTextView = textView {
         setTextColor(Purple40.toArgb())
         text = "0/0"
     }
-    private val clickImageView = context.imageView {
+    private val heartView = imageView {
         setImageResource(R.drawable.ic_heart_rate)
         imageTintList = ColorStateList.valueOf(Purple40.toArgb())
+    }
+
+    private val expandedView = horizontalLayout {
+        isVisible = false
+        addView(heartView)
+        addView(clickTextView)
         onClick {
             onClick(it)
             autoCollapseJob.cancel()
             autoCollapseJob.start()
+            scaleAnimation { value ->
+                scaleX = value
+                scaleY = value
+            }.start()
         }
-    }
-
-    private val expandedView = context.horizontalLayout {
-        isVisible = false
-        addView(clickImageView)
-        addView(clickTextView)
     }
 
     init {

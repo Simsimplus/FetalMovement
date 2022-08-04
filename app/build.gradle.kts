@@ -11,7 +11,7 @@ android {
     compileSdk = 32
 
     defaultConfig {
-        applicationId = "io.simsim.demo.secure"
+        applicationId = "io.simsim.demo.fetal"
         minSdk = 26
         targetSdk = 32
         versionCode = 1
@@ -20,6 +20,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments.putAll(
+                    mapOf(
+                        "room.incremental" to "true",
+                        "room.expandProjection" to "true",
+                        "room.schemaLocation" to "$projectDir/schemas".toString()
+                    )
+                )
+            }
         }
     }
 

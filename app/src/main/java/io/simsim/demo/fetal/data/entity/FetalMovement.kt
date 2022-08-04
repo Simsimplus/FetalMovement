@@ -1,32 +1,48 @@
 package io.simsim.demo.fetal.data.entity
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.util.*
 
 @Entity(
-    tableName = "table_main"
+    tableName = "table_record"
 )
 data class FetalMovementRecord(
-    @PrimaryKey(autoGenerate = true) val dbId: Long = 0L,
-    @ColumnInfo(name = "record_time") val startTime: Long,
-    @ColumnInfo(name = "movement_list") val movements: List<FetalMovement>
-)
+    @PrimaryKey var recordId: String = UUID.randomUUID().toString(),
+    @ColumnInfo(name = "recordStartTime") val recordStartTime: LocalDateTime = LocalDateTime.now(),
+    @ColumnInfo(name = "recordEndTime") var recordEndTime: LocalDateTime = recordStartTime,
+    @ColumnInfo(name = "validMovement") var validMovement: Int = 0,
+    @ColumnInfo(name = "totalMovement") var totalMovement: Int = 0
+) {
+    @Ignore
+    var movements: MutableList<FetalMovement> = mutableListOf()
+}
 
 @Entity(
     tableName = "table_movement",
     foreignKeys = [
         ForeignKey(
             entity = FetalMovementRecord::class,
-            parentColumns = ["dbId"],
+            parentColumns = ["recordId"],
             onDelete = ForeignKey.CASCADE,
-            childColumns = ["dbId"]
+            childColumns = ["recordId"]
         )
     ]
 )
 data class FetalMovement(
-    @PrimaryKey(autoGenerate = true) val dbId: Long = 0L,
-    @ColumnInfo(name = "movement_time") val time: Long,
-    @ColumnInfo(name = "movement_valid") val isValid: Boolean
+    @PrimaryKey(autoGenerate = true) var movementId: Long = 0L,
+    @ColumnInfo(name = "recordId", index = true) val recordId: String,
+    @ColumnInfo(name = "movementTime") val movementTime: LocalDateTime = LocalDateTime.now(),
+    @ColumnInfo(name = "isMovementValid") val isMovementValid: Boolean
 )
+
+object LocalDateTimeConverter {
+    @TypeConverter
+    fun time2Long(time: LocalDateTime): Long = time.toInstant(ZoneOffset.UTC).toEpochMilli()
+
+    @TypeConverter
+    fun long2Time(long: Long): LocalDateTime =
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(long), ZoneOffset.UTC)
+}

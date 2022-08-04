@@ -1,15 +1,11 @@
 package io.simsim.demo.fetal.ui.main
 
 import android.app.Activity
-import android.app.Service
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
@@ -28,17 +24,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.viewModelScope
 import com.lzf.easyfloat.EasyFloat
 import com.lzf.easyfloat.enums.ShowPattern
 import com.lzf.easyfloat.enums.SidePattern
 import com.lzf.easyfloat.interfaces.OnPermissionResult
 import com.lzf.easyfloat.permission.PermissionUtils
+import dagger.hilt.android.AndroidEntryPoint
 import io.simsim.demo.fetal.R
 import io.simsim.demo.fetal.helper.*
-import io.simsim.demo.fetal.service.BaseBinder
-import io.simsim.demo.fetal.service.OverlayService
 import io.simsim.demo.fetal.ui.history.HistoryActivity
-import io.simsim.demo.fetal.ui.overlay.OverlayActivity
 import io.simsim.demo.fetal.ui.theme.FetalDemoTheme
 import io.simsim.demo.fetal.ui.widgt.FloatingView
 import kotlinx.coroutines.Job
@@ -47,21 +42,22 @@ import kotlinx.coroutines.launch
 import splitties.toast.UnreliableToastApi
 import splitties.toast.toast
 
-class MainActivity : AppCompatActivity(), ServiceConnection {
-    private lateinit var service: OverlayService
+@AndroidEntryPoint
+class MainActivity : AppCompatActivity() {
+    private val vm: MainVM by viewModels()
     private val floatWindow by lazy {
         EasyFloat.with(this)
             .setLayout(
                 FloatingView(
                     context = this,
-                    remainTimeFlow = service.timerFlow,
-                    clickTextFlow = service.validClick.combine(service.totalClick) { a, b ->
+                    remainTimeFlow = vm.timerFlow,
+                    clickTextFlow = vm.validClick.combine(vm.totalClick) { a, b ->
                         "$a/$b"
                     },
                     onClick = {
-                        service.onClick()
+                        vm.onClick()
                     },
-                    coroutineScope = service
+                    coroutineScope = vm.viewModelScope
                 )
             )
             .setDragEnable(true)
@@ -73,13 +69,16 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
-        bindService(
-            Intent(this, OverlayService::class.java),
-            this,
-            Service.BIND_AUTO_CREATE
-        )
         setContent {
+            RecordScreen(
+                vm.timerFlow.collectAsState().value,
+                vm.validTimeFlow.collectAsState().value,
+                vm.validClick.collectAsState().value,
+                vm.totalClick.collectAsState().value,
+                vm::onClick
+            )
         }
+        EasyFloat.hide("float")
     }
 
     override fun onResume() {
@@ -89,26 +88,8 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
 
     override fun onPause() {
         super.onPause()
-        EasyFloat.show("float")
-    }
-
-    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-        this.service = (service as BaseBinder).service as OverlayService
-        setContent {
-            RecordScreen(
-                this.service.timerFlow.collectAsState().value,
-                this.service.validTimeFlow.collectAsState().value,
-                this.service.validClick.collectAsState().value,
-                this.service.totalClick.collectAsState().value,
-                this.service::onClick
-            )
-        }
         floatWindow.show()
-        EasyFloat.hide("float")
-    }
-
-    override fun onServiceDisconnected(name: ComponentName?) {
-        //
+        EasyFloat.show("float")
     }
 
     override fun onBackPressed() {
@@ -246,13 +227,6 @@ private fun AuthScreen() {
                     }
                 }) {
                     Text(text = "authenticate")
-                }
-                TextButton(onClick = {
-                    if (Settings.canDrawOverlays(ctx)) {
-                        ctx.startService<OverlayService>()
-                    } else ctx.goto<OverlayActivity>()
-                }) {
-                    Text(text = "go overlay")
                 }
             }
         }

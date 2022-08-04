@@ -3,9 +3,11 @@ package io.simsim.demo.fetal
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import dagger.hilt.android.HiltAndroidApp
 import io.simsim.demo.fetal.helper.LifecycleHelp
 import splitties.systemservices.notificationManager
 
+@HiltAndroidApp
 class App : Application() {
     override fun onCreate() {
         super.onCreate()

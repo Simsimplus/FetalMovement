@@ -4,6 +4,8 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.diffplug.spotless") version "6.9.0"
+    kotlin("kapt")
+    id("dagger.hilt.android.plugin")
 }
 android {
     compileSdk = 32
@@ -70,6 +72,12 @@ dependencies {
     implementation(Splitties.pack.androidMdcWithViewsDsl)
 
     implementation(files("./libs/EasyFloat-2.0.4.aar"))
+
+    implementation(Google.dagger.hilt.android)
+    kapt(Google.dagger.hilt.compiler)
+
+    implementation(AndroidX.room.ktx)
+    kapt(AndroidX.room.compiler)
 
 
     testImplementation(Testing.junit4)

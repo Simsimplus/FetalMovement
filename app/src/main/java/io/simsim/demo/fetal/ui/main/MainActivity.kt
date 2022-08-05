@@ -73,8 +73,8 @@ class MainActivity : AppCompatActivity() {
             RecordScreen(
                 vm.timerFlow.collectAsState().value,
                 vm.validTimeFlow.collectAsState().value,
-                vm.validClick.collectAsState().value,
-                vm.totalClick.collectAsState().value,
+                vm.validClick.collectAsState(0).value,
+                vm.totalClick.collectAsState(0).value,
                 vm::onClick
             )
         }

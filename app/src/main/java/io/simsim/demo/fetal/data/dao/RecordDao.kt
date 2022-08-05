@@ -12,7 +12,9 @@ interface RecordDao {
     @Insert
     suspend fun insertMovement(movementList: List<FetalMovement>)
 
-    @Insert
+    @Insert(
+        onConflict = OnConflictStrategy.IGNORE
+    )
     suspend fun insertRecord(fetalMovementRecord: FetalMovementRecord)
 
     @Transaction
@@ -38,18 +40,27 @@ interface RecordDao {
     }
 
     @Query(
-        "select * from table_record where recordId =:id"
+        "select * from table_record where recordId = :recordId"
     )
-    fun queryRecord(id: String): Flow<FetalMovementRecord>
+    fun queryRecord(recordId: String): Flow<FetalMovementRecord?>
 
     // U
     @Query(
-        "update table_record set validMovement = case when(:isValid = 1) then validMovement + 1 else validMovement end,totalMovement = totalMovement+1"
+        "update table_record set validMovement = case when(:isValid = 1) then validMovement + 1 else validMovement end,totalMovement = totalMovement+1 where recordId = :recordId"
     )
-    suspend fun updateRecord(id: String, isValid: Boolean)
+    suspend fun updateRecord(recordId: String, isValid: Boolean)
 
     @Insert
-    suspend fun addMovement(fetalMovement: FetalMovement)
+    suspend fun insertMovement(fetalMovement: FetalMovement)
+
+    @Transaction
+    suspend fun addMovementToRecord(fetalMovementRecord: FetalMovementRecord, isValid: Boolean) {
+        insertRecord(fetalMovementRecord)
+        updateRecord(fetalMovementRecord.recordId, isValid)
+        insertMovement(
+            FetalMovement(recordId = fetalMovementRecord.recordId, isMovementValid = isValid)
+        )
+    }
 
 //    suspend fun updateRecord
 

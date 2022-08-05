@@ -9,6 +9,7 @@ import io.simsim.demo.fetal.helper.Timer
 import io.simsim.demo.fetal.helper.ValidChecker
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.time.Duration
 import javax.inject.Inject
 
@@ -19,9 +20,12 @@ class MainVM @Inject constructor(
 ) : BaseViewModel() {
     private val validChecker = ValidChecker(Duration.ofMinutes(5))
     private val _validTimeFlowStarter = MutableStateFlow(false)
-    private val _fetalMovementRecordFlow = MutableSharedFlow<FetalMovementRecord>()
+    private val _fetalMovementRecordFlow = MutableStateFlow(FetalMovementRecord())
 
     val timerFlow = Timer.formatTimeString(Duration.ofHours(1), Duration.ofSeconds(1))
+        .onCompletion {
+            // do final when countdown ends
+        }
         .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = "--")
 
     val validTimeFlow = _validTimeFlowStarter.flatMapLatest {
@@ -37,24 +41,21 @@ class MainVM @Inject constructor(
     val totalClick = _fetalMovementRecordFlow.flatMapLatest {
         db.recordDao().queryRecord(it.recordId)
     }.map {
-        it.totalMovement
+        it?.totalMovement ?: 0
     }
 
     val validClick = _fetalMovementRecordFlow.flatMapLatest {
         db.recordDao().queryRecord(it.recordId)
     }.map {
-        it.validMovement
+        it?.validMovement ?: 0
     }
 
-    fun onClick() {
-//        validChecker.apply {
-//            _validTimeFlowStarter.value = true
-//            validClick.update {
-//                it + 1
-//            }
-//        }
-//        totalClick.update {
-//            it + 1
-//        }
+    fun onClick() = viewModelScope.launch {
+        db.recordDao().addMovementToRecord(
+            _fetalMovementRecordFlow.value,
+            validChecker.apply {
+                _validTimeFlowStarter.value = true
+            }
+        )
     }
 }

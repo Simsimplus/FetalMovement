@@ -4,8 +4,8 @@ buildscript {
     }
 }
 plugins {
-    id("com.android.application") apply false
-    id("com.android.library") apply false
+    id("com.android.application") apply false version "7.2.2"
+    id("com.android.library") apply false version "7.2.2"
     id("org.jetbrains.kotlin.android") apply false
 }
 

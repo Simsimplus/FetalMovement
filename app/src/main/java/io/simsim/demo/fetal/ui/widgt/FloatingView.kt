@@ -19,12 +19,14 @@ import splitties.views.dsl.core.horizontalLayout
 import splitties.views.dsl.core.imageView
 import splitties.views.dsl.core.textView
 import splitties.views.onClick
+import splitties.views.onLongClick
 
 @SuppressLint("ViewConstructor")
 class FloatingView constructor(
     context: Context,
     private val remainTimeFlow: Flow<String>,
     private val clickTextFlow: Flow<String>,
+    private val onLongClick: () -> Unit,
     private val onClick: (View) -> Unit,
     private val coroutineScope: CoroutineScope
 ) : FrameLayout(
@@ -70,6 +72,7 @@ class FloatingView constructor(
                 scaleY = value
             }.start()
         }
+        onLongClick(true, this@FloatingView.onLongClick)
     }
 
     init {

@@ -1,6 +1,7 @@
 package io.simsim.demo.fetal
 
 import android.app.Application
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import dagger.hilt.android.HiltAndroidApp
@@ -21,7 +22,9 @@ class App : Application() {
                 NOTIFICATION_FLOAT_ID,
                 "悬浮窗通知",
                 NotificationManager.IMPORTANCE_DEFAULT
-            )
+            ).apply {
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            }
         )
         notificationManager.createNotificationChannels(channels)
     }

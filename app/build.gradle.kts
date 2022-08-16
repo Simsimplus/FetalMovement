@@ -27,7 +27,7 @@ android {
                     mapOf(
                         "room.incremental" to "true",
                         "room.expandProjection" to "true",
-                        "room.schemaLocation" to "$projectDir/schemas".toString()
+                        "room.schemaLocation" to "$projectDir/schemas"
                     )
                 )
             }
@@ -35,8 +35,15 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
+            isDebuggable = true
+            isJniDebuggable = true
             isMinifyEnabled = false
+        }
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isDebuggable = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -90,6 +97,7 @@ dependencies {
     implementation(AndroidX.room.ktx)
     kapt(AndroidX.room.compiler)
 
+    implementation("com.airbnb.android:lottie-compose:_")
 
     testImplementation(Testing.junit4)
     androidTestImplementation(AndroidX.test.ext.junit)

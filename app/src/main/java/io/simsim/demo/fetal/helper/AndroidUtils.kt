@@ -10,12 +10,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.lifecycle.ViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.lzf.easyfloat.interfaces.OnPermissionResult
+import com.lzf.easyfloat.permission.PermissionUtils
 import io.simsim.demo.fetal.service.BaseService
 import splitties.activities.startActivity
 
@@ -109,4 +113,16 @@ inline fun <reified T : BroadcastReceiver> Context.broadcastPendingIntent(
         PendingIntent.FLAG_UPDATE_CURRENT
     }
     return PendingIntent.getBroadcast(this, 0, intent, flags)
+}
+
+fun Activity.requestOverlayPermission(onPermissionResult: OnPermissionResult) {
+    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+        startActivity(
+            Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            ).apply {
+                data = "package:$packageName".toUri()
+            }
+        )
+    } else PermissionUtils.requestPermission(this, onPermissionResult)
 }

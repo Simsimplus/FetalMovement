@@ -1,14 +1,18 @@
 package io.simsim.demo.fetal.ui.main
 
 import android.app.Activity
+import android.app.Service
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -18,83 +22,71 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.viewModelScope
-import com.lzf.easyfloat.EasyFloat
-import com.lzf.easyfloat.enums.ShowPattern
-import com.lzf.easyfloat.enums.SidePattern
+import androidx.lifecycle.whenResumed
+import com.airbnb.lottie.LottieComposition
+import com.airbnb.lottie.compose.*
 import com.lzf.easyfloat.interfaces.OnPermissionResult
-import com.lzf.easyfloat.permission.PermissionUtils
 import dagger.hilt.android.AndroidEntryPoint
 import io.simsim.demo.fetal.R
 import io.simsim.demo.fetal.helper.*
+import io.simsim.demo.fetal.service.BaseBinder
+import io.simsim.demo.fetal.service.OverlayService
 import io.simsim.demo.fetal.ui.history.HistoryActivity
 import io.simsim.demo.fetal.ui.theme.FetalDemoTheme
-import io.simsim.demo.fetal.ui.widgt.FloatingView
+import io.simsim.demo.fetal.ui.widgt.RocketWord
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import splitties.toast.UnreliableToastApi
 import splitties.toast.toast
+import java.util.*
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
-    private val vm: MainVM by viewModels()
-    private val floatWindow by lazy {
-        EasyFloat.with(this)
-            .setLayout(
-                FloatingView(
-                    context = this,
-                    remainTimeFlow = vm.timerFlow,
-                    clickTextFlow = vm.validClick.combine(vm.totalClick) { a, b ->
-                        "$a/$b"
-                    },
-                    onClick = {
-                        vm.onClick()
-                    },
-                    coroutineScope = vm.viewModelScope
-                )
-            )
-            .setDragEnable(true)
-            .setSidePattern(SidePattern.RESULT_HORIZONTAL)
-            .setShowPattern(ShowPattern.ALL_TIME)
-            .setTag("float")
-    }
+class MainActivity : AppCompatActivity(), ServiceConnection {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
-        setContent {
-            RecordScreen(
-                vm.timerFlow.collectAsState().value,
-                vm.validTimeFlow.collectAsState().value,
-                vm.validClick.collectAsState(0).value,
-                vm.totalClick.collectAsState(0).value,
-                vm::onClick
-            )
-        }
-        EasyFloat.hide("float")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        EasyFloat.hide("float")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        floatWindow.show()
-        EasyFloat.show("float")
+        bindService(
+            Intent(
+                this,
+                OverlayService::class.java
+            ),
+            this,
+            Service.BIND_AUTO_CREATE
+        )
     }
 
     override fun onBackPressed() {
         super.onBackPressed()
         back2Home()
+    }
+
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+        //
+        val overlayService = (service as BaseBinder).service as OverlayService
+        setContent {
+            RecordScreen(
+                overlayService.timerFlow.collectAsState().value,
+                overlayService.validTimeFlow.collectAsState().value,
+                overlayService.validClick.collectAsState(0).value,
+                overlayService.totalClick.collectAsState(0).value,
+                overlayService::onClick
+            )
+        }
+    }
+
+    override fun onServiceDisconnected(name: ComponentName?) {
+        //
     }
 }
 
@@ -107,24 +99,60 @@ private fun RecordScreen(
     onClick: () -> Unit
 ) {
     val ctx = ctx
+    val density = LocalDensity.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lottieComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_heart2))
     var isAllowOverlay by remember {
         mutableStateOf(
             Settings.canDrawOverlays(ctx)
         )
     }
+    var wordPosition by remember {
+        mutableStateOf(DpOffset.Zero)
+    }
+    var word by remember {
+        mutableStateOf("test")
+    }
+    var clickEnabled by remember {
+        mutableStateOf(true)
+    }
+    LaunchedEffect(clickEnabled) {
+        if (!clickEnabled) {
+            delay(lottieComposition?.duration?.toLong() ?: 2500)
+            clickEnabled = true
+        }
+    }
+    rememberCoroutineScope().launch {
+        lifecycleOwner.whenResumed {
+            isAllowOverlay = Settings.canDrawOverlays(ctx)
+        }
+    }
     FetalDemoTheme {
         // A surface container using the 'background' color from the theme
         Surface(
             modifier = Modifier
-                .fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+                .fillMaxSize()
+                .pointerInput(true) {
+                    this.detectTapGestures(onPress = {
+                        wordPosition = with(density) { DpOffset(it.x.toDp(), it.y.toDp()) }
+                        word = UUID
+                            .randomUUID()
+                            .toString()
+                            .slice(0..3)
+                    })
+                },
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.primary
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
                 IconToggleButton(
                     checked = isAllowOverlay,
                     onCheckedChange = {
-                        if (!Settings.canDrawOverlays(ctx)) PermissionUtils.requestPermission(
-                            ctx as Activity,
+                        if (!Settings.canDrawOverlays(ctx)) (ctx as Activity).requestOverlayPermission(
                             object : OnPermissionResult {
                                 override fun permissionResult(isOpen: Boolean) {
                                     isAllowOverlay = isOpen
@@ -143,14 +171,20 @@ private fun RecordScreen(
                 }
                 Heart(
                     modifier = Modifier.align(Alignment.Center),
+                    clickEnabled = clickEnabled,
                     countdownText = countdownText,
-                    onClick = onClick
+                    onClick = {
+                        onClick()
+                        clickEnabled = false
+                    },
+                    lottieComposition = lottieComposition
                 )
                 Text(
                     modifier = Modifier.align(Alignment.BottomStart),
                     text = "[$validCountDownText]valid:$validClick"
                 )
                 Text(modifier = Modifier.align(Alignment.BottomEnd), text = "total:$totalClick")
+                RocketWord(word = word, position = wordPosition)
             }
         }
     }
@@ -159,31 +193,46 @@ private fun RecordScreen(
 @Composable
 fun Heart(
     modifier: Modifier = Modifier,
-    heartSizeDp: Dp = 100.dp,
+    heartSizeDp: Dp = LocalConfiguration.current.screenWidthDp.dp / 2,
     countdownText: String?,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    clickEnabled: Boolean = true,
+    lottieComposition: LottieComposition?
 ) {
-    var validClick by remember {
-        mutableStateOf(false)
-    }
-    val scale by animateFloatAsState(targetValue = if (validClick) 1.2f else 1f) {
-        validClick = false
-    }
-    ColorContent(MaterialTheme.colorScheme.primary) {
-        CenterAlignColumn(modifier = modifier.scale(scale)) {
-            Icon(
-                modifier = Modifier
-                    .silentClickable {
-                        validClick = true
-                        onClick()
-                    }
-                    .size(heartSizeDp),
-                painter = painterResource(id = R.drawable.ic_heart_rate),
-                contentDescription = ""
+    CenterAlignColumn(modifier = modifier) {
+        val lottieAnimationState = rememberLottieAnimatable()
+        val progress by lottieAnimationState
+        val endProgress = 0.8f
+        LaunchedEffect(true) {
+            lottieAnimationState.snapTo(
+                lottieComposition,
+                1f
             )
-            countdownText?.let {
-                Text(text = it)
+//            if (progress == endProgress) onLottieEnd()
+        }
+        LaunchedEffect(clickEnabled) {
+            if (!clickEnabled) {
+                lottieAnimationState.animate(
+                    composition = lottieComposition,
+                    clipSpec = LottieClipSpec.Progress(0f, endProgress),
+                    cancellationBehavior = LottieCancellationBehavior.OnIterationFinish
+                )
             }
+        }
+        LottieAnimation(
+            modifier = Modifier
+                .silentClickable(
+                    enabled = clickEnabled
+                ) {
+                    onClick()
+                }
+                .size(heartSizeDp),
+            composition = lottieComposition,
+            progress = { progress }
+        )
+        Text(text = progress.toString())
+        countdownText?.let {
+            Text(text = it)
         }
     }
 }

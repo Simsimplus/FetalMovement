@@ -99,6 +99,8 @@ dependencies {
 
     implementation("com.airbnb.android:lottie-compose:_")
 
+    implementation(files("./libs/MPAndroidChart-v3.1.0.aar"))
+
     testImplementation(Testing.junit4)
     androidTestImplementation(AndroidX.test.ext.junit)
     androidTestImplementation(AndroidX.test.espresso.core)

@@ -60,10 +60,9 @@ fun FetalDemoTheme(
             }
         }
     }
-
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = { Surface(color = colorScheme.surface, content = content) }
     )
 }

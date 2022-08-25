@@ -99,7 +99,14 @@ dependencies {
 
     implementation("com.airbnb.android:lottie-compose:_")
 
-    implementation(files("./libs/MPAndroidChart-v3.1.0.aar"))
+//    implementation(files("./libs/MPAndroidChart-v3.1.0.aar"))
+
+//    implementation(files("./libs/charts/charts-core-android-1.1.0-eap1.aar"))
+//    implementation(files("./libs/charts/charts-core-1.0.8-RC7.jar"))
+//    implementation(files("./libs/charts/charts-viz-android-0.9.0-RC1.aar"))
+//    implementation(files("./libs/charts/charts-viz-0.9.0-RC1.jar"))
+    implementation("io.data2viz.charts:core:1.1.0-eap1")
+    implementation("io.data2viz.d2v:viz:0.8.12")
 
     testImplementation(Testing.junit4)
     androidTestImplementation(AndroidX.test.ext.junit)
